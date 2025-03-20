@@ -1,10 +1,5 @@
 <script setup>
-import Checkbox from '@/Components/Checkbox.vue';
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
+import { BForm, BFormGroup, BFormInput, BButton } from 'bootstrap-vue-next';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 defineProps({
@@ -26,65 +21,68 @@ const submit = () => {
 </script>
 
 <template>
-    <GuestLayout>
-        <Head title="Log in" />
+    <div class="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-100 via-yellow-100 to-red-100 font-sans">
+        <div class="w-full max-w-sm p-8 bg-white rounded-lg shadow-lg text-center">
+            <Head title="Log in" />
 
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
-            {{ status }}
-        </div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">ログイン</h2>
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
-
-                <InputError class="mt-2" :message="form.errors.email" />
+            <div v-if="status" class="mb-4 text-sm text-green-600 text-center">
+                {{ status }}
             </div>
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+            <BForm @submit.prevent="submit" class="space-y-4">
+                <BFormGroup label="Eメール" label-for="email">
+                    <BFormInput
+                        id="email"
+                        type="email"
+                        v-model="form.email"
+                        required
+                        autofocus
+                        autocomplete="username"
+                        class="border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                </BFormGroup>
 
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="current-password"
-                />
+                <BFormGroup label="パスワード" label-for="password">
+                    <BFormInput
+                        id="password"
+                        type="password"
+                        v-model="form.password"
+                        required
+                        autocomplete="current-password"
+                        class="border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                </BFormGroup>
 
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
+                <div class="flex justify-between items-center text-sm">
+                    <Link v-if="canResetPassword" :href="route('password.request')" class="text-blue-600 hover:underline">
+                        パスワードをお忘れですか？
+                    </Link>
+                </div>
 
-            <div class="block mt-4">
-                <label class="flex items-center">
-                    <Checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ml-2 text-sm text-gray-600">Remember me</span>
-                </label>
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <Link
-                    v-if="canResetPassword"
-                    :href="route('password.request')"
-                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                <BButton
+                    type="submit"
+                    variant="primary"
+                    :disabled="form.processing"
+                    class="w-full py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-all shadow-md"
+                    style="background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853); background-size: 400% 400%; animation: gradient 3s infinite alternate;"
                 >
-                    Forgot your password?
-                </Link>
+                    ログイン
+                </BButton>
+            </BForm>
 
-                <PrimaryButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Log in
-                </PrimaryButton>
+            <div class="mt-6 text-sm text-gray-600">
+                アカウントをお持ちでないですか？
+                <Link :href="route('register')" class="text-blue-600 hover:underline">新規登録</Link>
             </div>
-        </form>
-    </GuestLayout>
+        </div>
+    </div>
 </template>
+
+<style>
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+</style>

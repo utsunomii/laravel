@@ -1,9 +1,5 @@
 <script setup>
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
+import { BForm, BFormGroup, BFormInput, BButton } from 'bootstrap-vue-next';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
@@ -22,83 +18,80 @@ const submit = () => {
 </script>
 
 <template>
-    <GuestLayout>
-        <Head title="Register" />
+    <div class="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-100 via-yellow-100 to-red-100 font-sans">
+        <div class="w-full max-w-sm p-8 bg-white rounded-lg shadow-lg text-center">
+            <Head title="Register" />
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="name" value="Name" />
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">新規登録</h2>
 
-                <TextInput
-                    id="name"
-                    type="text"
-                    class="mt-1 block w-full"
-                    v-model="form.name"
-                    required
-                    autofocus
-                    autocomplete="name"
-                />
+            <BForm @submit.prevent="submit" class="space-y-4">
+                <BFormGroup label="名前" label-for="name">
+                    <BFormInput
+                        id="name"
+                        type="text"
+                        v-model="form.name"
+                        required
+                        autofocus
+                        autocomplete="name"
+                        class="border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                </BFormGroup>
 
-                <InputError class="mt-2" :message="form.errors.name" />
-            </div>
+                <BFormGroup label="Eメール" label-for="email">
+                    <BFormInput
+                        id="email"
+                        type="email"
+                        v-model="form.email"
+                        required
+                        autocomplete="username"
+                        class="border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                </BFormGroup>
 
-            <div class="mt-4">
-                <InputLabel for="email" value="Email" />
+                <BFormGroup label="パスワード" label-for="password">
+                    <BFormInput
+                        id="password"
+                        type="password"
+                        v-model="form.password"
+                        required
+                        autocomplete="new-password"
+                        class="border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                </BFormGroup>
 
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autocomplete="username"
-                />
+                <BFormGroup label="パスワード確認" label-for="password_confirmation">
+                    <BFormInput
+                        id="password_confirmation"
+                        type="password"
+                        v-model="form.password_confirmation"
+                        required
+                        autocomplete="new-password"
+                        class="border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                </BFormGroup>
 
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
-
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
-
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="new-password"
-                />
-
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
-
-            <div class="mt-4">
-                <InputLabel for="password_confirmation" value="Confirm Password" />
-
-                <TextInput
-                    id="password_confirmation"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password_confirmation"
-                    required
-                    autocomplete="new-password"
-                />
-
-                <InputError class="mt-2" :message="form.errors.password_confirmation" />
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <Link
-                    :href="route('login')"
-                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                <BButton
+                    type="submit"
+                    variant="primary"
+                    :disabled="form.processing"
+                    class="w-full py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-all shadow-md"
+                    style="background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853); background-size: 400% 400%; animation: gradient 3s infinite alternate;"
                 >
-                    Already registered?
-                </Link>
+                    登録
+                </BButton>
+            </BForm>
 
-                <PrimaryButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Register
-                </PrimaryButton>
+            <div class="mt-6 text-sm text-gray-600">
+                すでに登録済みですか？
+                <Link :href="route('login')" class="text-blue-600 hover:underline">ログイン</Link>
             </div>
-        </form>
-    </GuestLayout>
+        </div>
+    </div>
 </template>
+
+<style>
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+</style>
