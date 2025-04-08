@@ -3,17 +3,25 @@ import { ref } from 'vue';
 import { BForm, BFormGroup, BFormInput, BButton } from 'bootstrap-vue-next';
 import { Head, Link } from '@inertiajs/vue3'; // Linkコンポーネントは未使用のためコメントアウトまたは削除してもOK
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import axios from 'axios';
+import { useForm } from '@inertiajs/vue3';
 
-const urls = ref([]);
-const name = ref('');
-const url = ref('');
+const form = useForm({
+    link_name: '',
+    link_url: '',
+});
 
-const addUrl = () => {
-    if (name.value && url.value) {
-        urls.value.push({ name: name.value, url: url.value });
-        name.value = '';
-        url.value = '';
-    }
+const submit = () => {
+    form.post('/urls/store', {
+        preserveScroll: true,
+        onSuccess: () => {
+            form.reset();
+            console.log('登録成功');
+        },
+        onError: (errors) => {
+            console.error('登録エラー:', errors);
+        }
+    });
 };
 </script>
 
@@ -22,15 +30,15 @@ const addUrl = () => {
         <div class="w-full max-w-2xl p-8 bg-white rounded-lg shadow-lg">
             <Head title="Urls" />
             <AuthenticatedLayout>
-                <BForm @submit.prevent="addUrl" class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <BForm @submit.prevent="submit" class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <BFormGroup
                         label="名前"
-                        label-for="name"
+                        label-for="link_name"
                         label-class="block text-sm font-medium text-gray-700 mb-1 mt-4"
                         class="mb-6" >
                         <BFormInput
                             id="name"
-                            v-model="name"
+                            v-model="form.link_name"
                             required
                             placeholder="サイト名などを入力"
                             class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -39,12 +47,12 @@ const addUrl = () => {
 
                     <BFormGroup
                         label="URL"
-                        label-for="url"
+                        label-for="link_url"
                         label-class="block text-sm font-medium text-gray-700 mb-1"
                         class="mb-6" >
                         <BFormInput
                             id="url"
-                            v-model="url"
+                            v-model="form.link_url"
                             type="url" required
                             placeholder="https://example.com"
                             class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"

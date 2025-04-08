@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     // URL登録画面
     Route::get('/urls', [UrlController::class, 'index'])->name('urls.index');
+    Route::post('/urls/store', [UrlController::class, 'store'])->name('urls.store');
 });
 
 require __DIR__.'/auth.php';
