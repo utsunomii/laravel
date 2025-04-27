@@ -13,6 +13,7 @@ class Link extends Model
         'user_id',
         'link_name',
         'link_url',
+        'priority',
     ];
 
 

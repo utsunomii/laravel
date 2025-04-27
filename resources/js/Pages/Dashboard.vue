@@ -1,100 +1,177 @@
 <script setup>
 import { ref } from 'vue';
-import { BFormGroup, BListGroup, BListGroupItem } from 'bootstrap-vue-next';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import DefaultLayout from '@/containers/DefaultLayout.vue';
+import { useForm, router, Head } from '@inertiajs/vue3';
+
+import {
+    CListGroup,
+    CListGroupItem,
+    CModal,
+    CFormInput,
+    CFormLabel
+} from '@coreui/vue';
+
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faTrash, faEdit } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-// 正しいライブラリ名をインポート
+library.add(faTrash, faEdit);
 import Vue3StarRatings from 'vue3-star-ratings';
 
-library.add(faTrash, faEdit);
+const props = defineProps({
+    links: {
+        type: Array,
+        default: () => []
+    }
+});
 
-// urlsにratingプロパティを追加
-const urls = ref([
-    { name: 'Google', url: 'https://www.google.com', rating: 5 },
-    { name: 'GitHub', url: 'https://www.github.com', rating: 4 },
-    { name: 'Twitter', url: 'https://www.twitter.com', rating: 3 },
-    { name: 'Facebook', url: 'https://www.facebook.com', rating: 2 },
-    { name: 'Instagram', url: 'https://www.instagram.com', rating: 1 },
-    // 他のURLを追加
-]);
+const isModalVisible = ref(false);
+const editingItem = ref(null);
 
-// 不要な url ref を削除
-// const url = ref([...]) // <- 削除
+const form = useForm({
+    id: null,
+    name: '',
+    url: '',
+});
 
-// 削除機能
-const removeUrl = (index) => {
-    urls.value.splice(index, 1);
+const editUrl = (item) => {
+    editingItem.value = item;
+    form.defaults({
+        id: item.id,
+        name: item.name,
+        url: item.url,
+    });
+    form.reset();
+    isModalVisible.value = true;
 };
 
-// 編集機能（仮）
-const editUrl = (index) => {
-    console.log(`Editing URL at index: ${index}`, urls.value[index]);
-    // ここに実際の編集ロジックを実装
+const closeModal = () => {
+    isModalVisible.value = false;
+    editingItem.value = null;
+    form.reset();
+    form.clearErrors();
 };
 
-// レーティング更新機能を追加
-const updateRating = (index, newRating) => {
-    if (urls.value[index]) {
-        // v-model を使わない場合はここで更新
-        // urls.value[index].rating = newRating;
-        console.log(`Updated rating for ${urls.value[index].name} to ${newRating}`);
-        // 必要であれば、ここでサーバーに更新を送信するなどの処理を追加
+const saveChanges = () => {
+    if (!editingItem.value) return;
+    form.put(route('links.update', editingItem.value.id), {
+        onSuccess: () => {
+            closeModal();
+        },
+        onError: (errors) => {
+            console.error("Save failed:", errors);
+        },
+        preserveScroll: true,
+    });
+};
+
+const removeUrl = (item) => {
+    if (confirm(`"${item.name}"を削除してもよろしいですか？`)) {
+        router.delete(route('links.destroy', item.id), {
+            onSuccess: () => {
+                 console.log(`Deleted link: ${item.name}`);
+            },
+            onError: (errors) => {
+                console.error("Delete failed:", errors);
+            },
+            preserveScroll: true,
+        });
+    }
+};
+
+const updatePriority = (id, newRating) => {
+    const itemIndex = props.links.findIndex(item => item.id === id);
+    if (itemIndex !== -1) {
+        props.links[itemIndex].priority = newRating;
+
+        router.put(route('links.update', id), { priority: newRating }, {
+            preserveScroll: true,
+            preserveState: true,
+
+            onSuccess: () => {
+                console.log(`Backend update success for ID ${id}`);
+            },
+            onError: (errors) => {
+                console.error(`Backend update failed for ID ${id}:`, errors);
+            },
+        });
     }
 };
 
 </script>
 
 <template>
-    <div class="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-100 via-yellow-100 to-red-100 font-sans">
-        <div class="w-full max-w-4xl p-8 bg-white rounded-lg shadow-lg">
-            <Head title="Dashboard" />
+    <Head title="Dashboard"/>
 
-            <AuthenticatedLayout>
-                <div class="py-12">
-                    <BFormGroup class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                        <BListGroup class="overflow-hidden shadow-sm sm:rounded-lg">
-                            <BListGroupItem
-                                v-for="(item, index) in urls"
-                                :key="item.url"
-                                class="flex justify-between items-center py-3 px-4"
-                            >
-                            <a :href="item.url" target="_blank"
-                                class="text-xl text-gray-700 hover:text-gray-900 hover:underline mr-4">
-                                    {{ item.name }}
-                            </a>
-                                <div class="flex items-center space-x-4">
-                                    <Vue3StarRatings
-                                        v-model="item.rating"
-                                        :starSize="'20'"
-                                        :showRating="false"
-                                        :numberOfStars="5"
-                                    />
-
-                                <div class="flex items-center space-x-3">
-                                    <FontAwesomeIcon
-                                        icon="edit"
-                                        class="text-green-500 cursor-pointer hover:text-green-700"
-                                        @click="editUrl(index)"
-                                    />
-                                    <FontAwesomeIcon
-                                        icon="trash"
-                                        class="text-red-500 cursor-pointer hover:text-red-700"
-                                        @click="removeUrl(index)"
-                                    />
-                                </div>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <CListGroup class="overflow-hidden shadow-sm sm:rounded-lg">
+                <template v-if="props.links && props.links.length > 0">
+                    <CListGroupItem
+                        v-for="item in props.links"
+                        :key="item.id"
+                        class="flex justify-between items-center py-3 px-4"
+                    >
+                        <a :href="item.url" target="_blank"
+                           class="text-xl text-gray-700 hover:text-gray-900 hover:underline mr-4">
+                            {{ item.name }}
+                        </a>
+                        <div class="flex items-center space-x-4">
+                            <Vue3StarRatings
+                                :modelValue="item.priority"
+                                @update:modelValue="newRating => updatePriority(item.id, newRating)"
+                                :starSize="'20'"
+                                :showRating="false"
+                                :numberOfStars="5"
+                                :key="`rating-${item.id}-${item.priority}`"
+                            />
+                            <div class="flex items-center space-x-3">
+                                <FontAwesomeIcon
+                                    icon="edit"
+                                    class="text-green-500 cursor-pointer hover:text-green-700"
+                                    @click="editUrl(item)" />
+                                <FontAwesomeIcon
+                                    icon="trash"
+                                    class="text-red-500 cursor-pointer hover:text-red-700"
+                                    @click="removeUrl(item)" />
                             </div>
-                            </BListGroupItem>
-                        </BListGroup>
-                    </BFormGroup>
-                </div>
-            </AuthenticatedLayout>
+                        </div>
+                    </CListGroupItem>
+                </template>
+                <CListGroupItem v-else>
+                    表示するリンクがありません。
+                </CListGroupItem>
+            </CListGroup>
         </div>
     </div>
+
+    <CModal
+        v-model:visible="isModalVisible"
+        :title="editingItem ? 'リンクを編集: ' + editingItem.name : 'リンクを編集'"
+        @close="closeModal"
+        @save="saveChanges" ok-title="保存"
+        cancel-title="キャンセル"
+        :backdrop="true" :keyboard="true" >
+        <div v-if="editingItem" class="d-block">
+           <CFormLabel>リンク名:</CFormLabel>
+               <CFormInput
+                   v-model="form.name" required
+               ></CFormInput>
+            <div v-if="form.errors.name" class="text-red-500 text-sm mt-1">{{ form.errors.name }}</div>
+
+           <CFormLabel class="mt-3">URL:</CFormLabel>
+                <CFormInput
+                   v-model="form.url" type="url"
+                   required
+               ></CFormInput>
+            <div v-if="form.errors.url" class="text-red-500 text-sm mt-1">{{ form.errors.url }}</div>
+        </div>
+        <div v-else>
+           項目が選択されていません。
+        </div>
+
+        </CModal>
+
 </template>
 
-<style>
-
+<style scoped>
 </style>

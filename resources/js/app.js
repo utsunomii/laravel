@@ -1,15 +1,17 @@
 import './bootstrap';
-import '../css/app.css';
+import '../css/app.css'; // アプリケーション独自のCSSがあれば残します
 
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 
-// BootstrapVueNextのインポート
-import * as BootstrapVueNext from 'bootstrap-vue-next';
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
+// ★★★ CoreUI のインポートと登録を追加 ★★★
+import CoreuiVue from '@coreui/vue';
+import '@coreui/coreui/dist/css/coreui.min.css'; // 例: CoreUI の CSS ファイルを直接インポート
+
+// ★★★ Vuex のインポートと登録を追加 ★★★
+import store from '@/store';
 
 const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'Laravel';
 
@@ -20,12 +22,14 @@ createInertiaApp({
         const app = createApp({ render: () => h(App, props) });
         app.use(plugin);
         app.use(ZiggyVue, Ziggy);
-        // BootstrapVueNext を適用
-        if (BootstrapVueNext.default) {
-            app.use(BootstrapVueNext.default);
-        } else {
-            app.use(BootstrapVueNext);
-        }
+
+        // CoreUI を使用するための登録
+        app.use(CoreuiVue);
+
+        // Vuex を使用するための登録
+        app.use(store);
+
+
         app.mount(el);
         return app;
     },

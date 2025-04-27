@@ -31,6 +31,7 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
     // ダッシュボード
     Route::get('/dashboard',  [DashboardController::class, 'index'])->name('dashboard');
+    Route::put('/dashboard/{id}/update-priority', [DashboardController::class, 'updatePriority'])->name('dashboard.updatePriority');
     // プロフィール編集画面
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -38,6 +39,7 @@ Route::middleware('auth')->group(function () {
     // URL登録画面
     Route::get('/urls', [UrlController::class, 'index'])->name('urls.index');
     Route::post('/urls/store', [UrlController::class, 'store'])->name('urls.store');
+
 });
 
 require __DIR__.'/auth.php';
